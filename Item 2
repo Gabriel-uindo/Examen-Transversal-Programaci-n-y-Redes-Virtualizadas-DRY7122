@@ -1,0 +1,24 @@
+import requests
+
+while True:
+    origen = input("Ingrese la ciudad de origen en Chile: ")
+    destino = input("Ingrese la ciudad de destino en Argentina: ")
+    transporte = input("Ingrese el medio de transporte (car, bike, foot): ")
+    if origen.lower() == 's' or destino.lower() == 's':
+        break
+
+    url = f"https://graphhopper.com/api/1/route?point={origen}&point={destino}&vehicle={transporte}&locale=es&key=TU_API_KEY"
+    response = requests.get(url)
+    data = response.json()
+
+    distance_m = data["paths"][0]["distance"]
+    distance_km = distance_m / 1000
+    time_s = data["paths"][0]["time"] / 1000
+    time_h = time_s / 3600
+    desc = data["paths"][0]["instructions"]
+
+    print(f"Distancia: {distance_km:.2f} km")
+    print(f"Duración estimada: {time_h:.2f} horas")
+    print("Narrativa del viaje:")
+    for d in desc:
+        print("-", d["text"])
