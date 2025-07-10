@@ -22,16 +22,16 @@ def geocoding(location):
 
 while True:
     vehicle = input("Tipo de vehículo (car, bike, foot): ")
-    if vehicle in ["q", "quit"]:
+    if vehicle in ["s", "quit"]:
         break
 
     origen = input("Ciudad origen en Chile: ")
-    if origen in ["q", "quit"]:
+    if origen in ["s", "quit"]:
         break
     lat_o, lng_o, name_o = geocoding(origen)
 
     destino = input("Ciudad destino en Argentina: ")
-    if destino in ["q", "quit"]:
+    if destino in ["s", "quit"]:
         break
     lat_d, lng_d, name_d = geocoding(destino)
 
@@ -63,8 +63,8 @@ while True:
     else:
         print("⚠️ Datos inválidos, vuelve a intentar.")
 
-    seguir = input("¿Quieres calcular otra ruta? (Enter para sí, q para salir): ")
-    if seguir.lower() in ["q", "quit"]:
+    seguir = input("¿Quieres calcular otra ruta? (Enter para sí, s para salir): ")
+    if seguir.lower() in ["s", "quit"]:
         break
 
 # =================================
