@@ -7,3 +7,4 @@ nombres = [
 print("Lista de nombres:")
 for nombre in nombres:
     print(nombre)
+input()
