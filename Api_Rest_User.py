@@ -1,88 +1,93 @@
-from flask import Flask, request, jsonify
+# You can add to this file in the editor 
+import pyotp
 import sqlite3
 import hashlib
-
+import uuid
+from flask import Flask, request
 app = Flask(__name__)
 
-# ==========================================
-# FUNCIONES DE BASE DE DATOS
-# ==========================================
-
-def init_db():
-    """Crea la base de datos si no existe"""
-    conn = sqlite3.connect('users.db')
+db_name = 'test.db'
+@app.route('/')
+def index():
+    return 'Welcome to the hands-on lab for an evolution of password systems!'
+######################################### Plain Text #########################################################
+@app.route('/signup/v1', methods=['POST'])
+def signup_v1():
+    conn = sqlite3.connect(db_name)
     c = conn.cursor()
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        name TEXT PRIMARY KEY,
-        password TEXT NOT NULL
-    )
-    """)
+    c.execute('''CREATE TABLE IF NOT EXISTS USER_PLAIN
+           (USERNAME  TEXT    PRIMARY KEY NOT NULL,
+            PASSWORD  TEXT    NOT NULL);''')
     conn.commit()
-    conn.close()
-
-def add_user(name, password_hash):
-    """Agrega un usuario a la base de datos"""
     try:
-        conn = sqlite3.connect('users.db')
-        c = conn.cursor()
-        c.execute("INSERT INTO users (name, password) VALUES (?, ?)", (name, password_hash))
+        c.execute("INSERT INTO USER_PLAIN (USERNAME,PASSWORD) "
+                  "VALUES ('{0}', '{1}')".format(request.form['username'], request.form['password']))
         conn.commit()
-        return True
     except sqlite3.IntegrityError:
-        return False
-    finally:
-        conn.close()
-
-def verify_user(name, password_hash):
-    """Verifica si existe el usuario con la contraseña hash"""
-    conn = sqlite3.connect('users.db')
+        return "username has been registered."
+    print('username: ', request.form['username'], ' password: ', request.form['password'])
+    return "signup success"
+def verify_plain(username, password):
+    conn = sqlite3.connect('test.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE name=? AND password=?", (name, password_hash))
-    result = c.fetchone()
+    query = "SELECT PASSWORD FROM USER_PLAIN WHERE USERNAME = '{0}'".format(username)
+    c.execute(query)
+    records = c.fetchone()
     conn.close()
-    return result is not None
-
-# ==========================================
-# RUTAS API
-# ==========================================
-
-@app.route('/register', methods=['POST'])
-def register():
-    name = request.form.get('name')
-    password = request.form.get('password')
-    
-    if not name or not password:
-        return jsonify({"status": "error", "message": "Faltan parámetros 'name' o 'password'"}), 400
-    
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    
-    if add_user(name, password_hash):
-        return jsonify({"status": "success", "message": f"Usuario {name} registrado exitosamente."}), 201
+    if not records:
+        return False
+    return records[0] == password
+@app.route('/login/v1', methods=['GET', 'POST'])
+def login_v1():
+    error = None
+    if request.method == 'POST':
+        if verify_plain(request.form['username'], request.form['password']):
+            error = 'login success'
+        else:
+            error = 'Invalid username/password'
     else:
-        return jsonify({"status": "error", "message": "El usuario ya existe."}), 409
+        error = 'Invalid Method'
+    return error
+######################################### Password Hashing #########################################################
 
-@app.route('/login', methods=['POST'])
-def login():
-    name = request.form.get('name')
-    password = request.form.get('password')
-    
-    if not name or not password:
-        return jsonify({"status": "error", "message": "Faltan parámetros 'name' o 'password'"}), 400
-    
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    
-    if verify_user(name, password_hash):
-        return jsonify({"status": "success", "message": f"Login exitoso. Bienvenido {name}"}), 200
+@app.route('/signup/v2', methods=['GET', 'POST'])
+def signup_v2():
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS USER_HASH
+           (USERNAME  TEXT    PRIMARY KEY NOT NULL,
+            HASH      TEXT    NOT NULL);''')
+    conn.commit()
+    try:
+        hash_value = hashlib.sha256(request.form['password'].encode()).hexdigest()
+        c.execute("INSERT INTO USER_HASH (USERNAME, HASH) "
+                  "VALUES ('{0}', '{1}')".format(request.form['username'], hash_value))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return "username has been registered."
+    print('username: ', request.form['username'], ' password: ', request.form['password'], ' hash: ', hash_value)
+    return "signup success"
+def verify_hash(username, password):
+    conn = sqlite3.connect(db_name)
+    c = conn.cursor()
+    query = "SELECT HASH FROM USER_HASH WHERE USERNAME = '{0}'".format(username)
+    c.execute(query)
+    records = c.fetchone()
+    conn.close()
+    if not records:
+        return False
+    return records[0] == hashlib.sha256(password.encode()).hexdigest()
+@app.route('/login/v2', methods=['GET', 'POST'])
+def login_v2():
+    error = None
+    if request.method == 'POST':
+        if verify_hash(request.form['username'], request.form['password']):
+            error = 'login success'
+        else:
+            error = 'Invalid username/password'
     else:
-        return jsonify({"status": "error", "message": "Login fallido. Usuario o contraseña incorrectos."}), 401
-
-# ==========================================
-# INICIO DEL SERVIDOR
-# ==========================================
-
+        error = 'Invalid Method'
+    return error
 if __name__ == '__main__':
-    init_db()
-    print("✅ Base de datos inicializada.")
-    app.run(host='0.0.0.0', port=5800, debug=True)
+        app.run(host='0.0.0.0', port=5800, ssl_context='adhoc')
 
