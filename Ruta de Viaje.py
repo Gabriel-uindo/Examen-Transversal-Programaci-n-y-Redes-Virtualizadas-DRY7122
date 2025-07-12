@@ -15,7 +15,7 @@ def geocoding(location):
         name = data["hits"][0].get("name", location)
         return lat, lng, name
     else:
-        print(f"⚠️ No se pudo encontrar {location}")
+        print(f" No se pudo encontrar {location}")
         return None, None, location
 
 while True:
@@ -57,9 +57,9 @@ while True:
                 print(f"- {step['text']} ({step['distance']/1000:.1f} km)")
             print("=======================================")
         else:
-            print("⚠️ No se pudo calcular la ruta.")
+            print(" No se pudo calcular la ruta.")
     else:
-        print("⚠️ Datos inválidos, vuelve a intentar.")
+        print(" Datos inválidos, vuelve a intentar.")
 
     seguir = input("¿Quieres calcular otra ruta? (Enter para sí, s para salir): ")
     if seguir.lower() in ["s", "quit"]:
