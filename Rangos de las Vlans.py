@@ -5,13 +5,13 @@ while True:
         break
 
     if not vlan_input.isdigit():
-        print("⚠️ Debe ingresar un número válido.")
+        print("Se debe ingresar un número válido.")
         continue
 
     vlan = int(vlan_input)
     if 1 <= vlan <= 1005:
-        print("✅ VLAN en rango normal.")
+        print("La VLAN es de rango normal.")
     elif 1006 <= vlan <= 4094:
-        print("✅ VLAN en rango extendido.")
+        print("<La VLAN es de rango extendido.")
     else:
-        print("⚠️ Número de VLAN fuera de rango válido.")
+        print("El Número de la VLAN esta fuera del rango válido.")
