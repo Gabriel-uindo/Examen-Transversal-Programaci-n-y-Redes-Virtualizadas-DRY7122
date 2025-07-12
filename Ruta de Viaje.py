@@ -1,10 +1,8 @@
 import requests
 import urllib.parse
 
-# =================================
-# CONFIGURACIÓN
-# =================================
-api_key = "d242aefe-259c-4221-90ba-a14a854a060a"  # <-- pon aquí tu clave de Graphhopper
+
+api_key = "d242aefe-259c-4221-90ba-a14a854a060a"  
 route_url = "https://graphhopper.com/api/1/route?"
 
 def geocoding(location):
@@ -67,7 +65,4 @@ while True:
     if seguir.lower() in ["s", "quit"]:
         break
 
-# =================================
-# STOP para Windows / Notepad++
-# =================================
 input("Presiona Enter para cerrar...")
